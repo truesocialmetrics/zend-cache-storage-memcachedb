@@ -8,9 +8,9 @@ class MemcacheDbTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        if (!extension_loaded('memcached')) {
-            $this->markTestSkipped("MemcacheDb extension is not loaded");
-        }
+        //if (!extension_loaded('memcached')) {
+        //    $this->markTestSkipped("MemcacheDb extension is not loaded");
+        //}
 
         $this->_options = new MemcacheDbOptions();
         $this->_storage = new MemcacheDb();
