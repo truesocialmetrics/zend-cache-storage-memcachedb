@@ -4,6 +4,6 @@ php:
     - 5.4
 before_script:
     - sudo apt-get install -qq memcachedb
-    - printf "\n"| pecl install memcached
+    - sudo apt-get install php5-memcached
     - composer install
 

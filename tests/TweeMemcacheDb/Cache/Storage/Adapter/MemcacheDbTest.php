@@ -13,12 +13,6 @@ class MemcacheDbTest extends PHPUnit_Framework_TestCase
         }
 
         $this->_options = new MemcacheDbOptions();
-        //if (defined('TESTS_ZEND_CACHE_MEMCACHED_HOST') && defined('TESTS_ZEND_CACHE_MEMCACHED_PORT')) {
-        //    $this->_options->addServer(TESTS_ZEND_CACHE_MEMCACHED_HOST, TESTS_ZEND_CACHE_MEMCACHED_PORT);
-        //} elseif (defined('TESTS_ZEND_CACHE_MEMCACHED_HOST')) {
-        //    $this->_options->addServer(TESTS_ZEND_CACHE_MEMCACHED_HOST);
-        //}
-
         $this->_storage = new MemcacheDb();
         $this->_storage->setOptions($this->_options);
         $this->_storage->flush();
