@@ -62,7 +62,7 @@ class MemcacheDb extends AbstractAdapter implements
      *
      * @return MemcachedResource
      */
-    public function getMemcachedMasterResource()
+    protected function getMemcachedMasterResource()
     {
         if ($this->memcachedMasterResource) {
             return $this->memcachedMasterResource;
@@ -111,10 +111,10 @@ class MemcacheDb extends AbstractAdapter implements
      *
      * @return MemcachedResource
      */
-    public function getMemcachedSlaveResource()
+    protected function getMemcachedSlaveResource()
     {
-        if ($this->memcachedResource) {
-            return $this->memcachedResource;
+        if ($this->memcachedSlaveResource) {
+            return $this->memcachedSlaveResource;
         }
 
         $options = $this->getOptions();
@@ -149,9 +149,9 @@ class MemcacheDb extends AbstractAdapter implements
         }
 
         // use the initialized resource
-        $this->memcachedResource = $memcached;
+        $this->memcachedSlaveResource = $memcached;
 
-        return $this->memcachedResource;
+        return $this->memcachedSlaveResource;
     }
 
     /* options */
