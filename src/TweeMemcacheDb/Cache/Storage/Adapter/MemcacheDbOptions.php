@@ -134,6 +134,7 @@ class MemcacheDbOptions extends AdapterOptions
             $host   = null;
             $port   = 21201;
             $weight = 1;
+            $type   = self::TYPE_SLAVE;
 
             if (!is_array($server) && !is_string($server)) {
                 throw new Exception\InvalidArgumentException('Invalid server specification provided; must be an array or string');
