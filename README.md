@@ -3,6 +3,8 @@ TweeMemcacheDb
 
 Version 1.0 Created by Rostislav Mykhajliw
 
+[![Build Status](https://travis-ci.org/necromant2005/tt-memcachedb.png?branch=master)](https://travis-ci.org/necromant2005/tt-memcachedb)
+
 Introduction
 ------------
 

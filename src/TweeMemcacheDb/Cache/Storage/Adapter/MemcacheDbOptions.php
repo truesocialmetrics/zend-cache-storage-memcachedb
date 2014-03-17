@@ -182,6 +182,9 @@ class MemcacheDbOptions extends AdapterOptions
                     if (isset($query['weight'])) {
                         $weight = (int)$query['weight'];
                     }
+                    if (isset($query['type'])) {
+                        $type = (string)$query['type'];
+                    }
                 }
             }
 
@@ -189,9 +192,12 @@ class MemcacheDbOptions extends AdapterOptions
                 throw new Exception\InvalidArgumentException('The list of servers must contain a host value.');
             }
 
-            $this->addServer($host, $port, $weight);
+            $this->addServer($host, $port, $weight, $type);
         }
 
+        if (!$this->hasMaster()) {
+            throw new Exception\InvalidArgumentException('No master found in provided definition');            
+        }
         return $this;
     }
 
@@ -203,6 +209,20 @@ class MemcacheDbOptions extends AdapterOptions
     public function getServers()
     {
         return $this->servers;
+    }
+
+    /**
+     * Test if servers has master
+     *
+     * @return bool
+     */
+    public function hasMaster()
+    {
+        foreach ($this->getServers() as $item) {
+            if ($item['type'] != self::TYPE_MASTER) continue;
+            return true;
+        }
+        return false;
     }
 
     /**
