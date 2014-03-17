@@ -125,13 +125,6 @@ class MemcacheDbTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $memcached->getOptions()->getServers());
     }
 
-    public function testConnect()
-    {
-        $memcached = new MemcacheDb();
-        $resource = $memcached->getMemcachedResource();
-        var_dump($resource);
-    }
-
     public function tearDown()
     {
         if ($this->_storage) {
