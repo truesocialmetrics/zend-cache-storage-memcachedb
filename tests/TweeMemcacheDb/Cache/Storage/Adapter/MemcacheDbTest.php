@@ -119,6 +119,7 @@ class MemcacheDbTest extends PHPUnit_Framework_TestCase
             'host'   => '127.0.0.1',
             'port'   => 21201,
             'weight' => 0,
+            'type' => 'master',
         ));
 
         $this->assertEquals($expected, $memcached->getOptions()->getServers());
