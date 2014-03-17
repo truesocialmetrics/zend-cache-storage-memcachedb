@@ -94,9 +94,8 @@ class MemcacheDb extends AbstractAdapter implements
         });
 
         // init servers
-        $servers = $options->getServers();
+        $servers = $options->getMasterServers();
         if ($servers) {
-            if ($servers['type'] != MemcacheDbOptions::TYPE_MASTER) continue;
             $memcached->addServers($servers);
         }
 

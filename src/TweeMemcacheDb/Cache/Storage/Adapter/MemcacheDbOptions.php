@@ -229,7 +229,7 @@ class MemcacheDbOptions extends AdapterOptions
             $this->addServer($host, $port, $weight, $type);
         }
 
-        if (!$this->hasMaster()) {
+        if (!count($this->getMasterServers())) {
             throw new Exception\InvalidArgumentException('No master found in provided definition');            
         }
         return $this;
@@ -246,17 +246,23 @@ class MemcacheDbOptions extends AdapterOptions
     }
 
     /**
-     * Test if servers has master
+     * Get Master Servers
      *
-     * @return bool
+     * @return array
      */
-    public function hasMaster()
+    public function getMasterServers()
     {
-        foreach ($this->getServers() as $item) {
-            if ($item['type'] != self::TYPE_MASTER) continue;
-            return true;
-        }
-        return false;
+        return array_values(array_filter($this->servers, function($server) { return $server['type'] == self::TYPE_MASTER; }));
+    }
+
+    /**
+     * Get Slave Servers
+     *
+     * @return array
+     */
+    public function getSlaveServers()
+    {
+        return array_values(array_filter($this->servers, function($server) { return $server['type'] == self::TYPE_SLAVE; }));
     }
 
     /**

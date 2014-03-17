@@ -47,4 +47,22 @@ class MemcacheDbOptionsTest extends PHPUnit_Framework_TestCase
             $options
         );
     }
+
+    public function testGetMasters()
+    {
+        $options = new MemcacheDbOptions;
+        $options->addServer('localhost');
+        $this->assertEquals(array(
+            array('host' => '127.0.0.1', 'port' => 21201, 'weight' => 0, 'type' => MemcacheDbOptions::TYPE_MASTER)
+        ), $options->getMasterServers());
+    }
+
+    public function testGetSlaves()
+    {
+        $options = new MemcacheDbOptions;
+        $options->addServer('localhost');
+        $this->assertEquals(array(
+            array('host' => 'localhost', 'port' => 21201, 'weight' => 0, 'type' => MemcacheDbOptions::TYPE_SLAVE)
+        ), $options->getSlaveServers());
+    }
 }
