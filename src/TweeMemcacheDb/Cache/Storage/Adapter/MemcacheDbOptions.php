@@ -151,6 +151,7 @@ class MemcacheDbOptions extends AdapterOptions
                     $host   = (string) $server[0];
                     $port   = isset($server[1]) ? (int) $server[1] : $port;
                     $weight = isset($server[2]) ? (int) $server[2] : $weight;
+                    $type   = isset($server[3]) ? $server[3] : $type;
                 }
 
                 // array(array('host' => <host>[, 'port' => <port>[, 'weight' => <weight>]])[, ...])
@@ -158,6 +159,7 @@ class MemcacheDbOptions extends AdapterOptions
                     $host   = (string)$server['host'];
                     $port   = isset($server['port'])   ? (int) $server['port']   : $port;
                     $weight = isset($server['weight']) ? (int) $server['weight'] : $weight;
+                    $type   = isset($server['type']) ? $server['type'] : $type;
                 }
             }
 
