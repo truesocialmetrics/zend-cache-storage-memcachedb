@@ -11,11 +11,18 @@ class MemcacheDbOptions extends AdapterOptions
     const TYPE_SLAVE  = 'slave';
 
     /**
-     * A memcached resource to share
+     * A memcached master resource to share
      *
      * @var null|MemcachedResource
      */
-    protected $memcachedResource;
+    protected $memcachedMasterResource;
+
+    /**
+     * A memcached slave resource to share
+     *
+     * @var null|MemcachedResource
+     */
+    protected $memcachedSlaveResource;
 
     /**
      * List of memcached servers to add on initialize
@@ -62,28 +69,53 @@ class MemcacheDbOptions extends AdapterOptions
     }
 
     /**
-     * A memcached resource to share
+     * A memcached master resource to share
      *
      * @param null|MemcachedResource $memcachedResource
      * @return MemcachedOptions
      */
-    public function setMemcachedResource(MemcachedResource $memcachedResource = null)
+    public function setMemcachedMasterResource(MemcachedResource $memcachedResource = null)
     {
-        if ($this->memcachedResource !== $memcachedResource) {
+        if ($this->memcachedMasterResource !== $memcachedResource) {
             $this->triggerOptionEvent('memcached_resource', $memcachedResource);
-            $this->memcachedResource = $memcachedResource;
+            $this->memcachedMasterResource = $memcachedResource;
         }
         return $this;
     }
 
     /**
-     * Get memcached resource to share
+     * A memcached slave resource to share
+     *
+     * @param null|MemcachedResource $memcachedResource
+     * @return MemcachedOptions
+     */
+    public function setMemcachedSlaveResource(MemcachedResource $memcachedResource = null)
+    {
+        if ($this->memcachedSlaveResource !== $memcachedResource) {
+            $this->triggerOptionEvent('memcached_resource', $memcachedResource);
+            $this->memcachedSlaveResource = $memcachedResource;
+        }
+        return $this;
+    }
+
+    /**
+     * Get memcached master resource to share
      *
      * @return null|MemcachedResource
      */
-    public function getMemcachedResource()
+    public function getMemcachedMasterResource()
     {
-        return $this->memcachedResource;
+        return $this->memcachedMasterResource;
+    }
+
+    /**
+     * Get memcached slave resource to share
+     *
+     * @return null|MemcachedResource
+     */
+    public function getMemcachedSlaveResource()
+    {
+        return $this->memcachedSlaveResource;
     }
 
     /**
