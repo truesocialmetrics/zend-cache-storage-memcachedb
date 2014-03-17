@@ -7,6 +7,9 @@ use Zend\Cache\Storage\Adapter\AdapterOptions;
 
 class MemcacheDbOptions extends AdapterOptions
 {
+    const TYPE_MASTER = 'master';
+    const TYPE_SLAVE  = 'slave';
+
     /**
      * A memcached resource to share
      *
@@ -24,6 +27,7 @@ class MemcacheDbOptions extends AdapterOptions
             'host'   => '127.0.0.1',
             'port'   => 21201,
             'weight' => 0,
+            'type'   => self::TYPE_MASTER,
         ),
     );
 
@@ -90,12 +94,13 @@ class MemcacheDbOptions extends AdapterOptions
      * @param  int $weight
      * @return MemcachedOptions
      */
-    public function addServer($host, $port = 21201, $weight = 0)
+    public function addServer($host, $port = 21201, $weight = 0, $type = self::TYPE_SLAVE)
     {
         $new = array(
             'host'   => $host,
             'port'   => $port,
-            'weight' => $weight
+            'weight' => $weight,
+            'type'   => $type,
         );
 
         foreach ($this->servers as $server) {

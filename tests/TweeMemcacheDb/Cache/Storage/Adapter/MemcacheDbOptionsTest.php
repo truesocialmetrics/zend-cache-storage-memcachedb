@@ -10,8 +10,8 @@ class MemcacheDbOptionsTest extends PHPUnit_Framework_TestCase
         $options->addServer('localhost');
         $this->assertAttributeEquals(
             array(
-                array('host' => '127.0.0.1', 'port' => 21201, 'weight' => 0),
-                array('host' => 'localhost', 'port' => 21201, 'weight' => 0),
+                array('host' => '127.0.0.1', 'port' => 21201, 'weight' => 0, 'type' => MemcacheDbOptions::TYPE_MASTER),
+                array('host' => 'localhost', 'port' => 21201, 'weight' => 0, 'type' => MemcacheDbOptions::TYPE_SLAVE),
             ),
             'servers',
             $options
@@ -24,7 +24,7 @@ class MemcacheDbOptionsTest extends PHPUnit_Framework_TestCase
         $options->setServers('localhost');
         $this->assertAttributeEquals(
             array(
-                array('host' => 'localhost', 'port' => 21201, 'weight' => 1),
+                array('host' => 'localhost', 'port' => 21201, 'weight' => 1, 'type' => MemcacheDbOptions::TYPE_SLAVE),
             ),
             'servers',
             $options
