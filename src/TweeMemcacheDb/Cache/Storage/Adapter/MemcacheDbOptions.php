@@ -252,7 +252,9 @@ class MemcacheDbOptions extends AdapterOptions
      */
     public function getMasterServers()
     {
-        return array_values(array_filter($this->servers, function($server) { return $server['type'] == self::TYPE_MASTER; }));
+        return array_values(array_filter($this->servers, function($server) { 
+            return $server['type'] == TweeMemcacheDb\Cache\Storage\Adapter\MemcacheDbOptions::TYPE_MASTER; 
+        }));
     }
 
     /**
@@ -262,7 +264,9 @@ class MemcacheDbOptions extends AdapterOptions
      */
     public function getSlaveServers()
     {
-        return array_values(array_filter($this->servers, function($server) { return $server['type'] == self::TYPE_SLAVE; }));
+        return array_values(array_filter($this->servers, function($server) { 
+            return $server['type'] == TweeMemcacheDb\Cache\Storage\Adapter\MemcacheDbOptions::TYPE_SLAVE; 
+        }));
     }
 
     /**
