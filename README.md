@@ -1,7 +1,7 @@
 TweeMemcacheDb
 ===========
 
-Version 1.0 Created by Rostislav Mykhajliw
+Version 2.0.1 Created by Rostislav Mykhajliw
 
 [![Build Status](https://travis-ci.org/necromant2005/tt-memcachedb.png?branch=master)](https://travis-ci.org/necromant2005/tt-memcachedb)
 
@@ -51,6 +51,6 @@ $options = new MemcacheDbOptions(array(
     array('host' => '127.0.0.2', 'port' => 21201, 'weight' => 2, 'type' => 'slave'),
     array('host' => '127.0.0.3', 'port' => 21201, 'weight' => 2, 'type' => 'slave'),
 ));
-$adapter = new MemcacheDb();
+$adapter = new MemcacheDb($options);
 
 ```
