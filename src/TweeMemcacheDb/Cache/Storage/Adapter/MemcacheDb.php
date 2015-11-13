@@ -1,7 +1,7 @@
 <?php
 namespace TweeMemcacheDb\Cache\Storage\Adapter;
 
-use Memcached as MemcachedResource;
+use SSDB as SsdbResource;
 use stdClass;
 use Traversable;
 use Zend\Cache\Exception;
@@ -26,14 +26,14 @@ class MemcacheDb extends AbstractAdapter implements
     /**
      * The memcached master resource
      *
-     * @var MemcachedResource
+     * @var SsdbResource
      */
     protected $memcachedMasterResource;
 
     /**
      * The memcached slave resource
      *
-     * @var MemcachedResource
+     * @var SsdbResource
      */
     protected $memcachedSlaveResource;
 
@@ -60,7 +60,7 @@ class MemcacheDb extends AbstractAdapter implements
     /**
      * Initialize the internal memcached master resource
      *
-     * @return MemcachedResource
+     * @return SsdbResource
      */
     protected function getMemcachedMasterResource()
     {
@@ -71,17 +71,14 @@ class MemcacheDb extends AbstractAdapter implements
         $options = $this->getOptions();
 
         // use a configured resource or a new one
-        $memcached = $options->getMemcachedMasterResource() ?: new MemcachedResource();
+        $memcached = $options->getMemcachedMasterResource() ?: new SsdbResource();
 
+        /*
         // init lib options
-        if (static::$extMemcachedMajorVersion > 1) {
-            $memcached->setOptions($options->getLibOptions());
-        } else {
-            foreach ($options->getLibOptions() as $k => $v) {
-                $memcached->setOption($k, $v);
-            }
+        foreach ($options->getLibOptions() as $k => $v) {
+            $memcached->option($k, $v);
         }
-        $memcached->setOption(MemcachedResource::OPT_PREFIX_KEY, $options->getNamespace());
+        $memcached->option(SsdbResource::OPT_PREFIX, $options->getNamespace());
 
         // Allow updating namespace
         $this->getEventManager()->attach('option', function ($event) use ($memcached) {
@@ -90,13 +87,16 @@ class MemcacheDb extends AbstractAdapter implements
                 // Cannot set lib options after initialization
                 return;
             }
-            $memcached->setOption(MemcachedResource::OPT_PREFIX_KEY, $params['namespace']);
+            $memcached->option(SsdbResource::OPT_PREFIX, $params['namespace']);
         });
+        */
 
         // init servers
         $servers = $options->getMasterServers();
         if ($servers) {
-            $memcached->addServers($servers);
+            foreach ($servers as $server) {
+                $memcached->connect($server['host'], $server['port']);
+            }
         }
 
         // use the initialized resource
@@ -108,7 +108,7 @@ class MemcacheDb extends AbstractAdapter implements
     /**
      * Initialize the internal memcached slave resource
      *
-     * @return MemcachedResource
+     * @return SsdbResource
      */
     protected function getMemcachedSlaveResource()
     {
@@ -119,17 +119,14 @@ class MemcacheDb extends AbstractAdapter implements
         $options = $this->getOptions();
 
         // use a configured resource or a new one
-        $memcached = $options->getMemcachedSlaveResource() ?: new MemcachedResource();
+        $memcached = $options->getMemcachedSlaveResource() ?: new SsdbResource();
 
         // init lib options
-        if (static::$extMemcachedMajorVersion > 1) {
-            $memcached->setOptions($options->getLibOptions());
-        } else {
-            foreach ($options->getLibOptions() as $k => $v) {
-                $memcached->setOption($k, $v);
-            }
-        }
-        $memcached->setOption(MemcachedResource::OPT_PREFIX_KEY, $options->getNamespace());
+        //foreach ($options->getLibOptions() as $k => $v) {
+        //    $memcached->option($k, $v);
+        //}
+        /*
+        $memcached->option(SsdbResource::OPT_PREFIX, $options->getNamespace());
 
         // Allow updating namespace
         $this->getEventManager()->attach('option', function ($event) use ($memcached) {
@@ -138,13 +135,15 @@ class MemcacheDb extends AbstractAdapter implements
                 // Cannot set lib options after initialization
                 return;
             }
-            $memcached->setOption(MemcachedResource::OPT_PREFIX_KEY, $params['namespace']);
+            $memcached->option(SsdbResource::OPT_PREFIX, $params['namespace']);
         });
-
+        */
         // init servers
-        $servers = $options->getServers();
+        $servers = $options->getSlaveServers();
         if ($servers) {
-            $memcached->addServers($servers);
+            foreach ($servers as $server) {
+                $memcached->connect($server['host'], $server['port']);
+            }
         }
 
         // use the initialized resource
@@ -207,7 +206,7 @@ class MemcacheDb extends AbstractAdapter implements
     public function getTotalSpace()
     {
         $memc  = $this->getMemcachedMasterResource();
-        $stats = $memc->getStats();
+        return $memc->getStats();
         if ($stats === false) {
             throw new Exception\RuntimeException($memc->getResultMessage());
         }
@@ -251,24 +250,10 @@ class MemcacheDb extends AbstractAdapter implements
         $memc = $this->getMemcachedSlaveResource();
 
         if (func_num_args() > 2) {
-            $result = $memc->get($normalizedKey, null, $casToken);
+            return $memc->get($normalizedKey, null, $casToken);
         } else {
-            $result = $memc->get($normalizedKey);
+            return $memc->get($normalizedKey);
         }
-
-        $success = true;
-        if ($result === false || $result === null) {
-            $rsCode = $memc->getResultCode();
-            if ($rsCode == MemcachedResource::RES_NOTFOUND) {
-                $result = null;
-                $success = false;
-            } elseif ($rsCode) {
-                $success = false;
-                throw $this->getExceptionByResultCode($memc, $rsCode);
-            }
-        }
-
-        return $result;
     }
 
     /**
@@ -281,12 +266,7 @@ class MemcacheDb extends AbstractAdapter implements
     protected function internalGetItems(array & $normalizedKeys)
     {
         $memc   = $this->getMemcachedSlaveResource();
-        $result = $memc->getMulti($normalizedKeys);
-        if ($result === false) {
-            throw $this->getExceptionByResultCode($memc, $memc->getResultCode());
-        }
-
-        return $result;
+        return $memc->multi_get($normalizedKeys);
     }
 
     /**
@@ -299,19 +279,7 @@ class MemcacheDb extends AbstractAdapter implements
     protected function internalHasItem(& $normalizedKey)
     {
         $memc  = $this->getMemcachedSlaveResource();
-        $value = $memc->get($normalizedKey);
-        if ($value === false || $value === null) {
-            $rsCode = $memc->getResultCode();
-            if ($rsCode == MemcachedResource::RES_SUCCESS) {
-                return true;
-            } elseif ($rsCode == MemcachedResource::RES_NOTFOUND) {
-                return false;
-            } else {
-                throw $this->getExceptionByResultCode($memc, $rsCode);
-            }
-        }
-
-        return true;
+        return $memc->get($normalizedKey);
     }
 
     /**
@@ -324,12 +292,7 @@ class MemcacheDb extends AbstractAdapter implements
     protected function internalHasItems(array & $normalizedKeys)
     {
         $memc   = $this->getMemcachedSlaveResource();
-        $result = $memc->getMulti($normalizedKeys);
-        if ($result === false) {
-            throw $this->getExceptionByResultCode($memc, $memc->getResultCode());
-        }
-
-        return array_keys($result);
+        return $memc->multi_get($normalizedKeys);
     }
 
     /**
@@ -342,16 +305,7 @@ class MemcacheDb extends AbstractAdapter implements
     protected function internalGetMetadatas(array & $normalizedKeys)
     {
         $memc   = $this->getMemcachedSlaveResource();
-        $result = $memc->getMulti($normalizedKeys);
-        if ($result === false) {
-            throw $this->getExceptionByResultCode($memc, $memc->getResultCode());
-        }
-
-        foreach ($result as & $value) {
-            $value = array();
-        }
-
-        return $result;
+        return $memc->multi_get($normalizedKeys);
     }
 
     /* writing */
@@ -367,11 +321,7 @@ class MemcacheDb extends AbstractAdapter implements
     protected function internalSetItem(& $normalizedKey, & $value)
     {
         $memc       = $this->getMemcachedMasterResource();
-        if (!$memc->set($normalizedKey, $value)) {
-            throw $this->getExceptionByResultCode($memc, $memc->getResultCode());
-        }
-
-        return true;
+        return $memc->set($normalizedKey, $value);
     }
 
     /**
@@ -384,11 +334,7 @@ class MemcacheDb extends AbstractAdapter implements
     protected function internalSetItems(array & $normalizedKeyValuePairs)
     {
         $memc       = $this->getMemcachedMasterResource();
-        if (!$memc->setMulti($normalizedKeyValuePairs)) {
-            throw $this->getExceptionByResultCode($memc, $memc->getResultCode());
-        }
-
-        return array();
+        return $memc->multi_set($normalizedKeyValuePairs);
     }
 
     /**
@@ -402,14 +348,7 @@ class MemcacheDb extends AbstractAdapter implements
     protected function internalAddItem(& $normalizedKey, & $value)
     {
         $memc       = $this->getMemcachedMasterResource();
-        if (!$memc->add($normalizedKey, $value)) {
-            if ($memc->getResultCode() == MemcachedResource::RES_NOTSTORED) {
-                return false;
-            }
-            throw $this->getExceptionByResultCode($memc, $memc->getResultCode());
-        }
-
-        return true;
+        return $memc->incr($normalizedKey, $value);
     }
 
     /**
@@ -423,15 +362,7 @@ class MemcacheDb extends AbstractAdapter implements
     protected function internalReplaceItem(& $normalizedKey, & $value)
     {
         $memc       = $this->getMemcachedMasterResource();
-        if (!$memc->replace($normalizedKey, $value)) {
-            $rsCode = $memc->getResultCode();
-            if ($rsCode == MemcachedResource::RES_NOTSTORED) {
-                return false;
-            }
-            throw $this->getExceptionByResultCode($memc, $rsCode);
-        }
-
-        return true;
+        return $memc->getset($normalizedKey, $value);
     }
 
     /**
@@ -448,17 +379,7 @@ class MemcacheDb extends AbstractAdapter implements
     protected function internalCheckAndSetItem(& $token, & $normalizedKey, & $value)
     {
         $memc       = $this->getMemcachedMasterResource();
-        $result     = $memc->cas($token, $normalizedKey, $value);
-
-        if ($result === false) {
-            $rsCode = $memc->getResultCode();
-            if ($rsCode !== 0 && $rsCode != MemcachedResource::RES_DATA_EXISTS) {
-                throw $this->getExceptionByResultCode($memc, $rsCode);
-            }
-        }
-
-
-        return $result;
+        return $memc->getset($token, $normalizedKey, $value);
     }
 
     /**
@@ -471,18 +392,7 @@ class MemcacheDb extends AbstractAdapter implements
     protected function internalRemoveItem(& $normalizedKey)
     {
         $memc   = $this->getMemcachedMasterResource();
-        $result = $memc->delete($normalizedKey);
-
-        if ($result === false) {
-            $rsCode = $memc->getResultCode();
-            if ($rsCode == MemcachedResource::RES_NOTFOUND) {
-                return false;
-            } elseif ($rsCode != MemcachedResource::RES_SUCCESS) {
-                throw $this->getExceptionByResultCode($memc, $rsCode);
-            }
-        }
-
-        return true;
+        return $memc->del($normalizedKey);
     }
 
     /**
@@ -494,25 +404,8 @@ class MemcacheDb extends AbstractAdapter implements
      */
     protected function internalRemoveItems(array & $normalizedKeys)
     {
-        // support for removing multiple items at once has been added in ext/memcached-2.0.0
-        if (static::$extMemcachedMajorVersion < 2) {
-            return parent::internalRemoveItems($normalizedKeys);
-        }
-
         $memc    = $this->getMemcachedMasterResource();
-        $rsCodes = $memc->deleteMulti($normalizedKeys);
-
-        $missingKeys = array();
-        foreach ($rsCodes as $key => $rsCode) {
-            if ($rsCode !== true && $rsCode != MemcachedResource::RES_SUCCESS) {
-                if ($rsCode != MemcachedResource::RES_NOTFOUND) {
-                    throw $this->getExceptionByResultCode($memc, $rsCode);
-                }
-                $missingKeys[] = $key;
-            }
-        }
-
-        return $missingKeys;
+        return $memc->multi_del($normalizedKeys);
     }
 
     /**
@@ -527,24 +420,7 @@ class MemcacheDb extends AbstractAdapter implements
     {
         $memc     = $this->getMemcachedMasterResource();
         $value    = (int) $value;
-        $newValue = $memc->increment($normalizedKey, $value);
-
-        if ($newValue === false) {
-            $rsCode = $memc->getResultCode();
-
-            // initial value
-            if ($rsCode == MemcachedResource::RES_NOTFOUND) {
-                $newValue = $value;
-                $memc->add($normalizedKey, $newValue);
-                $rsCode = $memc->getResultCode();
-            }
-
-            if ($rsCode) {
-                throw $this->getExceptionByResultCode($memc, $rsCode);
-            }
-        }
-
-        return $newValue;
+        return $memc->incr($normalizedKey, $value);
     }
 
     /**
@@ -558,25 +434,8 @@ class MemcacheDb extends AbstractAdapter implements
     protected function internalDecrementItem(& $normalizedKey, & $value)
     {
         $memc     = $this->getMemcachedMasterResource();
-        $value    = (int)$value;
-        $newValue = $memc->decrement($normalizedKey, $value);
-
-        if ($newValue === false) {
-            $rsCode = $memc->getResultCode();
-
-            // initial value
-            if ($rsCode == MemcachedResource::RES_NOTFOUND) {
-                $newValue = -$value;
-                $memc->add($normalizedKey, $newValue);
-                $rsCode = $memc->getResultCode();
-            }
-
-            if ($rsCode) {
-                throw $this->getExceptionByResultCode($memc, $rsCode);
-            }
-        }
-
-        return $newValue;
+        $value    = (int)$value * -1;
+        return $memc->incr($normalizedKey, $value);
     }
 
     /* status */
@@ -625,15 +484,15 @@ class MemcacheDb extends AbstractAdapter implements
     /**
      * Generate exception based of memcached result code
      *
-     * @param MemcachedResource $memcachedResource
+     * @param SsdbResource $memcachedResource
      * @param int $code
      * @return Exception\RuntimeException
      * @throws Exception\InvalidArgumentException On success code
      */
-    protected function getExceptionByResultCode(MemcachedResource $memcachedResource, $code)
+    protected function getExceptionByResultCode(SsdbResource $memcachedResource, $code)
     {
         switch ($code) {
-            case MemcachedResource::RES_SUCCESS:
+            case SsdbResource::RES_SUCCESS:
                 throw new Exception\InvalidArgumentException(
                     "The result code '{$code}' (SUCCESS) isn't an error"
                 );

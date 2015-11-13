@@ -1,7 +1,7 @@
 <?php
 namespace TweeMemcacheDb\Cache\Storage\Adapter;
 
-use Memcached as MemcachedResource;
+use SSDB as SsdbResource;
 use Zend\Cache\Exception;
 use Zend\Cache\Storage\Adapter\AdapterOptions;
 
@@ -13,14 +13,14 @@ class MemcacheDbOptions extends AdapterOptions
     /**
      * A memcached master resource to share
      *
-     * @var null|MemcachedResource
+     * @var null|SsdbResource
      */
     protected $memcachedMasterResource;
 
     /**
      * A memcached slave resource to share
      *
-     * @var null|MemcachedResource
+     * @var null|SsdbResource
      */
     protected $memcachedSlaveResource;
 
@@ -32,9 +32,15 @@ class MemcacheDbOptions extends AdapterOptions
     protected $servers = array(
         array(
             'host'   => '127.0.0.1',
-            'port'   => 21201,
+            'port'   => 8888,
             'weight' => 0,
             'type'   => self::TYPE_MASTER,
+        ),
+        array(
+            'host'   => '127.0.0.1',
+            'port'   => 8888,
+            'weight' => 0,
+            'type'   => self::TYPE_SLAVE,
         ),
     );
 
@@ -71,10 +77,10 @@ class MemcacheDbOptions extends AdapterOptions
     /**
      * A memcached master resource to share
      *
-     * @param null|MemcachedResource $memcachedResource
+     * @param null|SsdbResource $memcachedResource
      * @return MemcachedOptions
      */
-    public function setMemcachedMasterResource(MemcachedResource $memcachedResource = null)
+    public function setMemcachedMasterResource(SsdbResource $memcachedResource = null)
     {
         if ($this->memcachedMasterResource !== $memcachedResource) {
             $this->triggerOptionEvent('memcached_resource', $memcachedResource);
@@ -86,10 +92,10 @@ class MemcacheDbOptions extends AdapterOptions
     /**
      * A memcached slave resource to share
      *
-     * @param null|MemcachedResource $memcachedResource
+     * @param null|SsdbResource $memcachedResource
      * @return MemcachedOptions
      */
-    public function setMemcachedSlaveResource(MemcachedResource $memcachedResource = null)
+    public function setMemcachedSlaveResource(SsdbResource $memcachedResource = null)
     {
         if ($this->memcachedSlaveResource !== $memcachedResource) {
             $this->triggerOptionEvent('memcached_resource', $memcachedResource);
@@ -101,7 +107,7 @@ class MemcacheDbOptions extends AdapterOptions
     /**
      * Get memcached master resource to share
      *
-     * @return null|MemcachedResource
+     * @return null|SsdbResource
      */
     public function getMemcachedMasterResource()
     {
@@ -111,7 +117,7 @@ class MemcacheDbOptions extends AdapterOptions
     /**
      * Get memcached slave resource to share
      *
-     * @return null|MemcachedResource
+     * @return null|SsdbResource
      */
     public function getMemcachedSlaveResource()
     {
@@ -126,7 +132,7 @@ class MemcacheDbOptions extends AdapterOptions
      * @param  int $weight
      * @return MemcachedOptions
      */
-    public function addServer($host, $port = 21201, $weight = 0, $type = self::TYPE_SLAVE)
+    public function addServer($host, $port = 8888, $weight = 0, $type = self::TYPE_SLAVE)
     {
         $new = array(
             'host'   => $host,
@@ -164,7 +170,7 @@ class MemcacheDbOptions extends AdapterOptions
         foreach ($servers as $server) {
             // default values
             $host   = null;
-            $port   = 21201;
+            $port   = 8888;
             $weight = 1;
             $type   = self::TYPE_SLAVE;
 
@@ -230,7 +236,7 @@ class MemcacheDbOptions extends AdapterOptions
         }
 
         if (!count($this->getMasterServers())) {
-            throw new Exception\InvalidArgumentException('No master found in provided definition');            
+            throw new Exception\InvalidArgumentException('No master found in provided definition');
         }
         return $this;
     }
@@ -253,8 +259,8 @@ class MemcacheDbOptions extends AdapterOptions
     public function getMasterServers()
     {
         $type = self::TYPE_MASTER; // php 5.3 hack
-        return array_values(array_filter($this->servers, function($server) use ($type) { 
-            return $server['type'] == $type; 
+        return array_values(array_filter($this->servers, function($server) use ($type) {
+            return $server['type'] == $type;
         }));
     }
 
@@ -266,8 +272,8 @@ class MemcacheDbOptions extends AdapterOptions
     public function getSlaveServers()
     {
         $type = self::TYPE_SLAVE; // php 5.3 hack
-        return array_values(array_filter($this->servers, function($server) use($type) { 
-            return $server['type'] == $type; 
+        return array_values(array_filter($this->servers, function($server) use($type) {
+            return $server['type'] == $type;
         }));
     }
 

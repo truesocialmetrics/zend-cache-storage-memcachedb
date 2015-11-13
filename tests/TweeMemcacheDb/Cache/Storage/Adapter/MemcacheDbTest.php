@@ -23,14 +23,14 @@ class MemcacheDbTest extends PHPUnit_Framework_TestCase
     public function testOptionsAddServer()
     {
         $options = new MemcacheDbOptions();
-        $options->addServer('127.0.0.1', 21201);
+        $options->addServer('127.0.0.1', 8888);
         $options->addServer('localhost');
         $options->addServer('domain.com', 11215);
 
         $servers = array(
-            array('host' => '127.0.0.1', 'port' => 21201, 'weight' => 0, 'type' => 'master'),
-            array('host' => '127.0.0.1', 'port' => 21201, 'weight' => 0, 'type' => 'slave'),
-            array('host' => 'localhost', 'port' => 21201, 'weight' => 0, 'type' => 'slave'),
+            array('host' => '127.0.0.1', 'port' => 8888, 'weight' => 0, 'type' => 'master'),
+            array('host' => '127.0.0.1', 'port' => 8888, 'weight' => 0, 'type' => 'slave'),
+            array('host' => 'localhost', 'port' => 8888, 'weight' => 0, 'type' => 'slave'),
             array('host' => 'domain.com', 'port' => 11215, 'weight' => 0, 'type' => 'slave'),
         );
         $this->assertEquals($options->getServers(), $servers);
@@ -43,7 +43,7 @@ class MemcacheDbTest extends PHPUnit_Framework_TestCase
         $expectedServers = array(
             array('host' => '127.0.0.1', 'port' => 12345, 'weight' => 1, 'type' => 'master'),
             array('host' => 'localhost', 'port' => 54321, 'weight' => 2, 'type' => 'slave'),
-            array('host' => 'examp.com', 'port' => 21201, 'weight' => 1, 'type' => 'slave'),
+            array('host' => 'examp.com', 'port' => 8888, 'weight' => 1, 'type' => 'slave'),
         );
 
         return array(
@@ -117,9 +117,14 @@ class MemcacheDbTest extends PHPUnit_Framework_TestCase
 
         $expected = array(array(
             'host'   => '127.0.0.1',
-            'port'   => 21201,
+            'port'   => 8888,
             'weight' => 0,
             'type' => 'master',
+        ), array(
+            'host'   => '127.0.0.1',
+            'port'   => 8888,
+            'weight' => 0,
+            'type' => 'slave',
         ));
 
         $this->assertEquals($expected, $memcached->getOptions()->getServers());
