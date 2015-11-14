@@ -96,6 +96,7 @@ class MemcacheDb extends AbstractAdapter implements
         if ($servers) {
             foreach ($servers as $server) {
                 $memcached->connect($server['host'], $server['port']);
+                $memcached->option(SsdbResource::OPT_PREFIX, $options->getNamespace());
             }
         }
 
@@ -138,11 +139,13 @@ class MemcacheDb extends AbstractAdapter implements
             $memcached->option(SsdbResource::OPT_PREFIX, $params['namespace']);
         });
         */
+
         // init servers
         $servers = $options->getSlaveServers();
         if ($servers) {
             foreach ($servers as $server) {
                 $memcached->connect($server['host'], $server['port']);
+                $memcached->option(SsdbResource::OPT_PREFIX, $options->getNamespace());
             }
         }
 
