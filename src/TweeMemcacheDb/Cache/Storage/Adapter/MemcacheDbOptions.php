@@ -30,6 +30,7 @@ class MemcacheDbOptions extends AdapterOptions
      * @var string
      */
     protected $servers = array(
+        /*
         array(
             'host'   => '127.0.0.1',
             'port'   => 8888,
@@ -42,6 +43,7 @@ class MemcacheDbOptions extends AdapterOptions
             'weight' => 0,
             'type'   => self::TYPE_SLAVE,
         ),
+        */
     );
 
     /**
