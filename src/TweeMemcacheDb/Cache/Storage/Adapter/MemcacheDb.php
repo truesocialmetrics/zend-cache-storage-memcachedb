@@ -73,32 +73,11 @@ class MemcacheDb extends AbstractAdapter implements
         // use a configured resource or a new one
         $memcached = $options->getMemcachedMasterResource() ?: new SsdbResource();
 
-        /*
-        // init lib options
-        foreach ($options->getLibOptions() as $k => $v) {
-            $memcached->option($k, $v);
-        }
-        $memcached->option(SsdbResource::OPT_PREFIX, $options->getNamespace());
-
-        // Allow updating namespace
-        $this->getEventManager()->attach('option', function ($event) use ($memcached) {
-            $params = $event->getParams();
-            if (!isset($params['namespace'])) {
-                // Cannot set lib options after initialization
-                return;
-            }
-            $memcached->option(SsdbResource::OPT_PREFIX, $params['namespace']);
-        });
-        */
-
         // init servers
         $servers = $options->getMasterServers();
-        if ($servers) {
-            foreach ($servers as $server) {
-                $memcached->connect($server['host'], $server['port']);
-                $memcached->option(SsdbResource::OPT_PREFIX, $options->getNamespace());
-            }
-        }
+        shuffle($servers);
+        $server = reset($servers);
+        $memcached->connect($server['host'], $server['port']);
 
         // use the initialized resource
         $this->memcachedMasterResource = $memcached;
@@ -122,32 +101,11 @@ class MemcacheDb extends AbstractAdapter implements
         // use a configured resource or a new one
         $memcached = $options->getMemcachedSlaveResource() ?: new SsdbResource();
 
-        // init lib options
-        //foreach ($options->getLibOptions() as $k => $v) {
-        //    $memcached->option($k, $v);
-        //}
-        /*
-        $memcached->option(SsdbResource::OPT_PREFIX, $options->getNamespace());
-
-        // Allow updating namespace
-        $this->getEventManager()->attach('option', function ($event) use ($memcached) {
-            $params = $event->getParams();
-            if (!isset($params['namespace'])) {
-                // Cannot set lib options after initialization
-                return;
-            }
-            $memcached->option(SsdbResource::OPT_PREFIX, $params['namespace']);
-        });
-        */
-
         // init servers
         $servers = $options->getSlaveServers();
-        if ($servers) {
-            foreach ($servers as $server) {
-                $memcached->connect($server['host'], $server['port']);
-                $memcached->option(SsdbResource::OPT_PREFIX, $options->getNamespace());
-            }
-        }
+        shuffle($servers);
+        $server = reset($servers);
+        $memcached->connect($server['host'], $server['port']);
 
         // use the initialized resource
         $this->memcachedSlaveResource = $memcached;

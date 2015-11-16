@@ -63,6 +63,7 @@ class MemcacheDbOptionsTest extends PHPUnit_Framework_TestCase
         $options = new MemcacheDbOptions;
         $options->addServer('localhost');
         $this->assertEquals(array(
+            array('host' => '127.0.0.1', 'port' => 8888, 'weight' => 0, 'type' => MemcacheDbOptions::TYPE_MASTER),
             array('host' => '127.0.0.1', 'port' => 8888, 'weight' => 0, 'type' => MemcacheDbOptions::TYPE_SLAVE),
             array('host' => 'localhost', 'port' => 8888, 'weight' => 0, 'type' => MemcacheDbOptions::TYPE_SLAVE),
         ), $options->getSlaveServers());

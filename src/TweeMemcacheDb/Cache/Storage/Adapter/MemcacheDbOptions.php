@@ -271,10 +271,7 @@ class MemcacheDbOptions extends AdapterOptions
      */
     public function getSlaveServers()
     {
-        $type = self::TYPE_SLAVE; // php 5.3 hack
-        return array_values(array_filter($this->servers, function($server) use($type) {
-            return $server['type'] == $type;
-        }));
+        return $this->getServers();
     }
 
     /**
