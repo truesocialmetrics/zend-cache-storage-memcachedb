@@ -78,6 +78,7 @@ class MemcacheDb extends AbstractAdapter implements
         shuffle($servers);
         $server = reset($servers);
         $memcached->connect($server['host'], $server['port']);
+        $memcached->option(SsdbResource::OPT_SERIALIZER, SsdbResource::SERIALIZER_PHP);
 
         // use the initialized resource
         $this->memcachedMasterResource = $memcached;
@@ -106,6 +107,7 @@ class MemcacheDb extends AbstractAdapter implements
         shuffle($servers);
         $server = reset($servers);
         $memcached->connect($server['host'], $server['port']);
+        $memcached->option(SsdbResource::OPT_SERIALIZER, SsdbResource::SERIALIZER_PHP);
 
         // use the initialized resource
         $this->memcachedSlaveResource = $memcached;
