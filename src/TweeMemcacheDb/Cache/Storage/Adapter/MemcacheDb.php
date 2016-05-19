@@ -78,7 +78,7 @@ class MemcacheDb extends AbstractAdapter implements
         shuffle($servers);
         $server = reset($servers);
         $memcached->connect($server['host'], $server['port']);
-        $memcached->option(SsdbResource::OPT_SERIALIZER, SsdbResource::SERIALIZER_PHP);
+        //$memcached->option(SsdbResource::OPT_SERIALIZER, SsdbResource::SERIALIZER_PHP);
 
         // use the initialized resource
         $this->memcachedMasterResource = $memcached;
@@ -224,7 +224,10 @@ class MemcacheDb extends AbstractAdapter implements
     protected function internalGetItems(array & $normalizedKeys)
     {
         $memc   = $this->getMemcachedSlaveResource();
-        return $memc->multi_get($normalizedKeys);
+        return array_map(function($value) {
+            if (!is_string($value)) return $value;
+            return unserialize($value);
+        }, $memc->multi_get($normalizedKeys));
     }
 
     /**
@@ -267,7 +270,10 @@ class MemcacheDb extends AbstractAdapter implements
     protected function internalGetMetadatas(array & $normalizedKeys)
     {
         $memc   = $this->getMemcachedSlaveResource();
-        return $memc->multi_get($normalizedKeys);
+        return array_map(function($value) {
+            if (!is_string($value)) return $value;
+            return unserialize($value);
+        }, $memc->multi_get($normalizedKeys));
     }
 
     /* writing */
@@ -283,7 +289,7 @@ class MemcacheDb extends AbstractAdapter implements
     protected function internalSetItem(& $normalizedKey, & $value)
     {
         $memc = $this->getMemcachedMasterResource();
-        return $memc->set($normalizedKey, $value);
+        return $memc->set($normalizedKey, serialize($value));
     }
 
     /**
@@ -296,7 +302,7 @@ class MemcacheDb extends AbstractAdapter implements
     protected function internalSetItems(array & $normalizedKeyValuePairs)
     {
         $memc = $this->getMemcachedMasterResource();
-        return $memc->multi_set($normalizedKeyValuePairs);
+        return $memc->multi_set(array_map('serialize', $normalizedKeyValuePairs));
     }
 
     /**
@@ -324,7 +330,7 @@ class MemcacheDb extends AbstractAdapter implements
     protected function internalReplaceItem(& $normalizedKey, & $value)
     {
         $memc = $this->getMemcachedMasterResource();
-        return $memc->getset($normalizedKey, $value);
+        return $memc->getset($normalizedKey, serialize($value));
     }
 
     /**
@@ -341,7 +347,7 @@ class MemcacheDb extends AbstractAdapter implements
     protected function internalCheckAndSetItem(& $token, & $normalizedKey, & $value)
     {
         $memc       = $this->getMemcachedMasterResource();
-        return $memc->getset($token, $normalizedKey, $value);
+        return $memc->getset($token, $normalizedKey, serialize($value));
     }
 
     /**
